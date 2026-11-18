@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>NEMESIS OS</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--c:#00f3ff;--p:#ff0055;--g:#00ff88;--y:#ffb800;--bg:#050810;--pn:rgba(12,22,40,.85)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;height:100dvh;background:radial-gradient(circle at 50% -10%,#0d2a4a,var(--bg) 60%);color:#dff;font:600 14px 'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;user-select:none;overflow:hidden}
+header{display:flex;gap:8px;padding:10px 12px}
+.pill{flex:1;background:var(--pn);border:1px solid #0ff3;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:15px}
+.pill b{color:#fff}
+main{flex:1;overflow:auto;padding:4px 12px 12px}
+.tab{display:none;flex-direction:column;align-items:center;gap:12px}
+.tab.on{display:flex}
+h2{margin:4px 0 0;font-size:15px;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px var(--c)}
+nav{display:flex;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#060b16;border-top:1px solid #0ff2}
+nav button{flex:1;background:none;border:0;color:#7aa;font:inherit;font-size:10px;padding:6px 0;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button i{font-style:normal;font-size:20px}
+nav button.on{color:#000;background:var(--c);box-shadow:0 0 14px var(--c)}
+.btn{width:100%;padding:15px;font:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#0ff3,#0ff1);border:2px solid var(--c);border-radius:12px;letter-spacing:1px}
+.btn:active{transform:scale(.97);background:var(--c);color:#000}
+.btn.p{border-color:var(--p);background:linear-gradient(135deg,#f053,#f051)}
+.btn.p:active{background:var(--p);color:#fff}
+body.busy .btn,body.busy .chips button,body.busy .zone{pointer-events:none;opacity:.5}
+.row{display:flex;gap:8px;width:100%}
+.chips button{flex:1;padding:9px 0;font:inherit;color:#9cd;background:#0006;border:1px solid #0ff4;border-radius:10px}
+.chips button.on{color:#000;background:var(--y);border-color:var(--y)}
+.stage{position:relative;width:320px;height:240px;max-width:100%;border:1px solid #0ff3;border-radius:16px;background:linear-gradient(#0a1830,#050a14);overflow:hidden}
+.abs{position:absolute;inset:0;width:100%;height:100%}
+.sprite{position:absolute;left:0;top:0;line-height:1}
+.wheel{position:relative;width:min(78vw,300px);aspect-ratio:1;margin-top:10px}
+#W{width:100%;height:100%;transition:transform 5s cubic-bezier(.12,.62,.08,1);filter:drop-shadow(0 0 16px #f058)}
+.ptr{position:absolute;top:-12px;left:50%;margin-left:-14px;border:14px solid transparent;border-top:28px solid var(--g);filter:drop-shadow(0 0 6px var(--g));z-index:2}
+.hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16%;aspect-ratio:1;border-radius:50%;background:radial-gradient(#334,#000);border:3px solid var(--c);box-shadow:0 0 14px var(--c);z-index:1}
+.board{position:relative;width:min(70vw,260px);aspect-ratio:1;border-radius:50%;box-shadow:0 0 30px #0ff4,0 0 60px #f053;margin:8px 0}
+.dart{position:absolute;width:22px;height:66px;transform-origin:50% 100%;opacity:0;filter:drop-shadow(0 4px 4px #000)}
+.floor{position:absolute;left:0;right:0;bottom:0;height:14px;border-top:2px solid var(--c);background:#0ff2}
+.grass{position:absolute;left:0;right:0;bottom:0;height:70px;background:repeating-linear-gradient(90deg,#0a3d22 0 40px,#0c4a29 40px 80px)}
+.zone{position:absolute;top:30px;width:80px;height:110px;background:#fff0;border:0;transition:.2s}
+.zone:active{background:#00ff8855}
+#keeper{font-size:40px}
+#fb,#bb{font-size:34px}
+#gnet{transform-origin:160px 85px}
+#net{transform-origin:215px 102px}
+.ri{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:10px;background:#0a1626;border:1px solid #0ff1;margin-bottom:6px}
+.ri b{width:34px;text-align:center}
+.ri span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+.ri em{font-style:normal;color:var(--y)}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--c),var(--p));color:#000;font-weight:900}
+.t0{border-color:gold;background:linear-gradient(90deg,#ffd70026,#0a1626)}
+.t1{border-color:silver}.t2{border-color:#cd7f32}
+.ri.me{outline:2px solid var(--g)}
+#list{width:100%}
+#me{position:sticky;bottom:0;width:100%;text-align:center;padding:10px;background:#04101c;border:1px solid var(--g);border-radius:12px;color:var(--g)}
+input{width:100%;padding:14px;background:#0008;border:2px solid var(--c);color:#fff;font:inherit;font-size:16px;border-radius:10px;text-align:center;outline:none}
+#pop{position:fixed;top:38%;left:50%;font-size:24px;font-weight:900;pointer-events:none;opacity:0;z-index:20;text-shadow:0 0 20px currentColor;transform:translate(-50%,-50%);text-align:center;width:90%}
+#pop.win{color:var(--g)}#pop.lose{color:var(--p)}#pop.even{color:#fff;font-size:20px}
+#pop.show{animation:pp 1.9s forwards}
+@keyframes pp{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+.cf{position:fixed;left:50%;top:42%;width:8px;height:12px;z-index:19;pointer-events:none;animation:cf 1.3s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes cf{40%{transform:translate(calc(var(--x)*.8),var(--y)) rotate(300deg)}100%{transform:translate(var(--x),320px) rotate(720deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){#W{transition-duration:1s}}
+.board{transform:perspective(600px) rotateX(16deg) rotateY(-10deg)}
+.fx{position:absolute;pointer-events:none;border-radius:50%}
+.en{position:relative;width:100%;height:24px;border-radius:12px;background:#0008;border:1px solid #0ff4;overflow:hidden}
+#enBar{height:100%;background:linear-gradient(90deg,var(--c),var(--g));transition:width .3s}
+#enTxt{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;color:#fff;text-shadow:0 0 4px #000}
+.gem{width:min(60vw,230px);height:min(60vw,230px);filter:drop-shadow(0 0 28px #0ff9);animation:fl 3s ease-in-out infinite;touch-action:manipulation}
+@keyframes fl{50%{transform:translateY(-8px)}}
+.fl{position:fixed;font-weight:900;font-size:24px;color:var(--y);pointer-events:none;z-index:18;text-shadow:0 0 10px var(--y)}
+.idea-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px;border-radius:12px;background:#0a1626;border:1px solid #0ff1;margin-bottom:8px}
+.idea-item.top{border-color:gold;box-shadow:0 0 10px gold;}
+.idea-txt{flex:1;font-size:13px;line-height:1.4}
+.idea-meta{font-size:10px;color:#7aa;margin-top:4px}
+.like-btn{position:relative;z-index:10;touch-action:manipulation;background:none;border:2px solid var(--p);color:var(--p);padding:8px 12px;border-radius:12px;font-weight:900;font-size:16px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all 0.1s ease;}
+.like-btn:active{transform:scale(0.85);background:rgba(255,0,85,0.2);}
+.like-btn.voted{background:var(--p);color:#fff;box-shadow:0 0 15px var(--p);}
+</style>
+</head>
+<body>
+<header>
+  <div class="pill" onclick="tab('profile')">👤 <b id="nick">…</b></div>
+  <div class="pill">🪙 <b id="bal">0</b></div>
+  <div class="pill" style="flex:0 0 auto" id="snd" onclick="toggleSnd()">🔊</div>
+  <div class="pill" style="flex:0 0 auto" onclick="tab('donate')">❤️</div>
+</header>
+
+<main>
+  <section class="tab on" id="t-wheel">
+    <h2>Колесо удачи</h2>
+    <div class="wheel"><div class="ptr"></div><div class="hub"></div><svg id="W" viewBox="0 0 100 100"></svg></div>
+    <div class="row chips" id="chips"></div>
+    <button class="btn" onclick="spin()">Крутить</button>
+  </section>
+
+  <section class="tab" id="t-darts">
+    <h2>Дартс · 50 монет</h2>
+    <div class="board" id="board">
+      <svg viewBox="0 0 200 200" class="abs">
+        <circle cx="100" cy="100" r="98" fill="#0a1226" stroke="#fff" stroke-width="2"/>
+        <circle cx="100" cy="100" r="90" fill="#10203d" stroke="#0ff" stroke-width="1.5"/>
+        <circle cx="100" cy="100" r="60" fill="#ff0055" opacity=".85"/>
+        <circle cx="100" cy="100" r="36" fill="#0b4a63" stroke="#0ff"/>
+        <circle cx="100" cy="100" r="12" fill="#ffb800" stroke="#fff" stroke-width="2"/>
+      </svg>
+      <svg class="dart" id="dart" viewBox="0 0 22 66"><path d="M11 66L8 46H14Z" fill="#dfe"/><rect x="9.5" y="14" width="3" height="32" fill="#00f3ff"/><path d="M11 12L2 0L8 14ZM11 12L20 0L14 14Z" fill="#ff0055"/></svg>
+    </div>
+    <button class="btn" onclick="dart('center')">🎯 В центр · ×3 · шанс 20%</button>
+    <button class="btn p" onclick="dart('ring')">⭕ В кольцо · ×2 · шанс 45%</button>
+  </section>
+
+  <section class="tab" id="t-basket">
+    <h2>Баскетбол · 30 монет</h2>
+    <div class="stage">
+      <svg class="abs" viewBox="0 0 320 240">
+        <rect x="242" y="38" width="8" height="74" rx="3" fill="#dff" opacity=".85"/>
+        <g id="net" fill="none" stroke="#fff9" stroke-width="1.5"><path d="M191 102L200 140H230L239 102"/><path d="M200 102L206 140M215 102V140M230 102L224 140M193 118H237M197 130H233"/></g>
+        <ellipse id="rim" cx="215" cy="102" rx="26" ry="6" fill="none" stroke="#ff0055" stroke-width="4" style="filter:drop-shadow(0 0 6px #f05)"/>
+      </svg>
+      <div class="floor"></div>
+      <div class="sprite" id="bb" style="transform:translate(30px,190px)">🏀</div>
+    </div>
+    <button class="btn" onclick="shot()">Бросок!</button>
+  </section>
+
+  <section class="tab" id="t-football">
+    <h2>Пенальти · 30 монет</h2>
+    <div class="stage">
+      <div class="grass"></div>
+      <svg class="abs" viewBox="0 0 320 240">
+        <defs><pattern id="nt" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 0H10V10" fill="none" stroke="#fff3"/></pattern></defs>
+        <rect id="gnet" x="40" y="30" width="240" height="110" fill="url(#nt)" stroke="#fff" stroke-width="4"/>
+      </svg>
+      <button class="zone" style="left:40px" onclick="kick(0)"></button>
+      <button class="zone" style="left:120px" onclick="kick(1)"></button>
+      <button class="zone" style="left:200px" onclick="kick(2)"></button>
+      <div class="sprite" id="keeper" style="transform:translate(140px,86px)">🧤</div>
+      <div class="sprite" id="fb" style="transform:translate(144px,174px)">⚽</div>
+    </div>
+    <div style="color:#9cd">Нажми на угол ворот, куда бьёшь · выигрыш ×1.4</div>
+  </section>
+
+  <section class="tab" id="t-ideas" style="align-items:stretch">
+    <h2 style="text-align:center">Голосование за обновления</h2>
+    <div style="text-align:center;color:#9cd;font-size:12px;margin-bottom:10px;">Топ-1 идея каждые 2 недели попадает в игру! 👑</div>
+    <input id="ideaIn" maxlength="100" placeholder="Твоя идея (до 100 симв.)">
+    <button class="btn" onclick="submitIdea()">Предложить идею</button>
+    <div id="ideasList" style="width:100%;margin-top:10px;"></div>
+  </section>
+
+  <section class="tab" id="t-donate">
+    <h2>Поддержать проект</h2>
+    <div style="text-align:center;color:#9cd;line-height:1.5">Спасибо, что играешь! Донат идёт на развитие игры.<br>В благодарность: <b style="color:var(--y)">⭐ значок в рейтинге</b> и бонус <b style="color:var(--g)">1 ⭐ = 20 🪙</b>.</div>
+    <div id="don" class="row" style="flex-wrap:wrap"></div>
+    <div style="color:#789;font-size:12px;text-align:center">Оплата Telegram Stars. Добровольно и без обязательств.</div>
+  </section>
+
+  <section class="tab" id="t-mine">
+    <h2>Шахта кристаллов</h2>
+    <div class="en"><div id="enBar"></div><span id="enTxt"></span></div>
+    <div id="gem"><svg class="gem" viewBox="0 0 100 100"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9ffcff"/><stop offset="1" stop-color="#7a2cff"/></linearGradient></defs>
+      <polygon points="50,6 86,34 74,88 26,88 14,34" fill="url(#gg)" stroke="#fff" stroke-width="1.5"/>
+      <path d="M50 6L36 34H64Z" fill="#fff6"/><path d="M14 34H86M50 6L36 34L50 88L64 34L50 6M36 34L26 88M64 34L74 88" fill="none" stroke="#fff8" stroke-width="1"/></svg></div>
+    <div id="mineInfo" style="color:#9cd;text-align:center"></div>
+    <button class="btn" id="colBtn" onclick="collect()"></button>
+    <button class="btn p" id="upBtn" onclick="upgrade()"></button>
+  </section>
+
+  <section class="tab" id="t-rating" style="align-items:stretch">
+    <h2 style="text-align:center">Зал славы · топ 100</h2>
+    <div class="row chips" id="cats">
+      <button data-c="rich" class="on">💎 Богатые</button>
+      <button data-c="spins">🎰 Прокруты</button>
+      <button data-c="online">🟢 Онлайн</button>
+    </div>
+    <div id="list"></div>
+    <div id="me"></div>
+  </section>
+
+  <section class="tab" id="t-profile">
+    <h2>Профиль</h2>
+    <input id="nickIn" maxlength="15" placeholder="Твой ник">
+    <button class="btn" onclick="saveNick()">Сохранить ник</button>
+    <button class="btn p" id="dailyBtn" onclick="daily()">Ежедневный бонус +500</button>
+    <button class="btn" onclick="invite()">👥 Пригласить друга · +500 🪙 вам обоим</button>
+    <div id="stats" style="color:#9cd"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-t="wheel" class="on" onclick="tab('wheel')"><i>🎰</i>Колесо</button>
+  <button data-t="darts" onclick="tab('darts')"><i>🎯</i>Дартс</button>
+  <button data-t="basket" onclick="tab('basket')"><i>🏀</i>Баскет</button>
+  <button data-t="football" onclick="tab('football')"><i>⚽</i>Футбол</button>
+  <button data-t="mine" onclick="tab('mine')"><i>⛏️</i>Шахта</button>
+  <button data-t="ideas" onclick="tab('ideas')"><i>💡</i>Идеи</button>
+  <button data-t="rating" onclick="tab('rating')"><i>🏆</i>Топ</button>
+</nav>
+<div id="pop"></div>
+
+<script>
+const tg = window.Telegram.WebApp; tg.expand(); tg.ready();
+try { tg.setHeaderColor("#050810"); tg.setBackgroundColor("#050810"); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch (e) {}
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let bal = 0, busy = false, bet = 10, cat = 'rich', rot = 0;
+
+// Безопасный вызов вибрации (исправляет баг с лайками)
+const hap = t => { try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
+const tap = () => { try { tg.HapticFeedback && tg.HapticFeedback.impactOccurred('medium'); } catch (e) {} };
+
+let mute = false; try { mute = localStorage.getItem('mute') === '1'; } catch (e) {}
+let AC;
+function snd(f, t = .12, type = 'sine', v = .08, delay = 0) {
+  if (mute) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime + delay;
+    o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + t);
+    o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + t);
+  } catch (e) {}
+}
+function toggleSnd() { mute = !mute; try { localStorage.setItem('mute', mute ? 1 : 0); } catch (e) {} $('#snd').textContent = mute ? '🔇' : '🔊'; }
+$('#snd').textContent = mute ? '🔇' : '🔊';
+
+async function api(path, body) {
+  try {
+    const r = await fetch('/api/' + path, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'Content-Type': 'application/json', 'X-Init': tg.initData },
+      body: body && JSON.stringify(body)
+    });
+    const text = await r.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { return { error: 'Ошибка туннеля' }; }
+    if (!r.ok) return { error: data.error || 'Ошибка сервера' };
+    return data;
+  } catch (e) {
+    return { error: 'Нет связи с сервером (проверь туннель)' };
+  }
+}
+
+function setBal(n) {
+  const el = $('#bal'), from = bal, t0 = performance.now(); bal = n;
+  (function f(t) { const k = Math.min(1, (t - t0) / 600); el.textContent = Math.round(from + (n - from) * k); if (k < 1) requestAnimationFrame(f); })(t0);
+}
+async function refresh() {
+  const d = await api('profile');
+  if (d.error) return d;
+  $('#nick').textContent = d.nickname;
+  if (!busy && !pendTaps) setBal(d.balance);
+  return d;
+}
+
+function confetti(n) {
+  for (let i = 0; i < n; i++) {
+    const e = document.createElement('i'); e.className = 'cf';
+    e.style.cssText = `--x:${(Math.random() - .5) * 340}px;--y:${-120 - Math.random() * 180}px;background:hsl(${Math.random() * 360} 100% 60%);animation-delay:${Math.random() * .15}s`;
+    document.body.append(e); setTimeout(() => e.remove(), 1600);
+  }
+}
+function pop(text, cls) {
+  const el = $('#pop'); el.className = ''; void el.offsetWidth;
+  el.textContent = text; el.className = 'show ' + cls;
+}
+function result(d) {
+  const n = d.payout - d.bet;
+  if (n > 0) { [523, 659, 784, 1047].forEach((f, i) => snd(f, .22, 'triangle', .08, i * .09)); pop(`+${n} 🪙`, 'win'); confetti(d.payout >= d.bet * 2 ? 70 : 35); hap('success'); }
+  else if (n < 0) { snd(150, .35, 'sawtooth', .05); pop(`${n} 🪙`, 'lose'); hap('error'); }
+  else pop('Ставка возвращена', 'even');
+}
+
+async function play(game, body, anim) {
+  if (busy) return;
+  busy = true; document.body.classList.add('busy'); tap();
+  try {
+    const d = await api(game, body);
+    if (d.error) { pop(d.error, 'lose'); return; }
+    await anim(d);
+    setBal(d.balance); result(d);
+  } catch (e) { pop('Ошибка', 'lose'); }
+  finally { busy = false; document.body.classList.remove('busy'); }
+}
+
+function tab(n) {
+  document.querySelectorAll('.tab').forEach(e => e.classList.toggle('on', e.id === 't-' + n));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === n));
+  if (n === 'mine') loadMine();
+  if (n === 'rating') loadRating();
+  if (n === 'profile') loadProfile();
+  if (n === 'ideas') loadIdeas();
+}
+
+const SEC = [0, 2, 0, .5, 0, 3, 0, 1.5];
+const COL = { 0: '#151a2e', .5: '#6a2cff', 1.5: '#0088ff', 2: '#ff0055', 3: '#ffb800' };
+(function buildWheel() {
+  const pt = (a, r) => { a = (a - 90) * Math.PI / 180; return [50 + r * Math.cos(a), 50 + r * Math.sin(a)]; };
+  let h = '';
+  SEC.forEach((m, i) => {
+    const [x0, y0] = pt(i * 45 - 22.5, 47), [x1, y1] = pt(i * 45 + 22.5, 47), [tx, ty] = pt(i * 45, 33);
+    h += `<path d="M50 50L${x0} ${y0}A47 47 0 0 1 ${x1} ${y1}Z" fill="${COL[m]}" stroke="#0ff6" stroke-width=".4"/>` +
+      `<text x="${tx}" y="${ty}" transform="rotate(${i * 45} ${tx} ${ty})" text-anchor="middle" dominant-baseline="middle" font-size="7.5" font-weight="900" fill="${m ? '#fff' : '#456'}">${m ? '×' + m : '💀'}</text>`;
+  });
+  h += '<circle cx="50" cy="50" r="48.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="1 5.9" opacity=".9"/><circle cx="50" cy="50" r="49.6" fill="none" stroke="#0ff" stroke-width=".8"/>';
+  $('#W').innerHTML = h;
+  $('#chips').innerHTML = [10, 50, 100, 500].map(b => `<button data-b="${b}" class="${b === bet ? 'on' : ''}">${b}</button>`).join('');
+  $('#chips').onclick = e => { const b = e.target.dataset.b; if (!b) return; bet = +b; document.querySelectorAll('#chips button').forEach(x => x.classList.toggle('on', x.dataset.b === b)); };
+})();
+function spin() {
+  play('wheel', { bet }, async d => {
+    const t = -d.sector * 45 + (Math.random() * 30 - 15);
+    rot += 1800 + (((t - rot) % 360) + 360) % 360;
+    $('#W').style.transform = `rotate(${rot}deg)`;
+    await sleep(5300);
+  });
+}
+
+function burst(host, x, y, color, n = 10, dist = 46) {
+  const r = el('i', 'fx'); r.style.cssText = `left:${x - 12}px;top:${y - 12}px;width:24px;height:24px;border:3px solid ${color}`; host.append(r);
+  r.animate([{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(4)', opacity: 0 }], { duration: 600, easing: 'ease-out' }).onfinish = () => r.remove();
+  for (let i = 0; i < n; i++) {
+    const s = el('i', 'fx'), an = i / n * 6.283 + Math.random(), L = dist * (.6 + Math.random() * .7);
+    s.style.cssText = `left:${x - 3}px;top:${y - 3}px;width:6px;height:6px;background:${color};box-shadow:0 0 6px ${color}`; host.append(s);
+    s.animate([{ transform: 'translate(0,0)', opacity: 1 }, { transform: `translate(${Math.cos(an) * L}px,${Math.sin(an) * L}px) scale(.2)`, opacity: 0 }], { duration: 500, easing: 'ease-out' }).onfinish = () => s.remove();
+  }
+}
+
+const BT = 'perspective(600px) rotateX(16deg) rotateY(-10deg)';
+function dart(zone) {
+  play('darts', { zone }, async d => {
+    const B = $('#board'), S = B.clientWidth, D = $('#dart');
+    const x = (100 + d.x * 90) / 200 * S, y = (100 + d.y * 90) / 200 * S;
+    D.style.left = x - 11 + 'px'; D.style.top = y - 66 + 'px';
+    const T = (tx, ty, r, s) => `translate(${tx}px,${ty}px) rotate(${r}deg) scale(${s})`;
+    await D.animate([
+      { transform: T(120, 340, 35, 3.4), opacity: 0, offset: 0 },
+      { transform: T(120, 340, 35, 3.4), opacity: 1, offset: .12 },
+      { transform: T(50, 110, 14, 1.9), offset: .6, easing: 'ease-in' },
+      { transform: T(0, 0, 0, 1), opacity: 1, offset: 1 }
+    ], { duration: 700, easing: 'cubic-bezier(.3,.1,.7,1)', fill: 'forwards' }).finished;
+    const col = d.hit ? (zone === 'center' ? '#ffb800' : '#ff0055') : '#00f3ff';
+    burst(B, x, y, col, d.hit ? 14 : 8);
+    B.animate([{ transform: BT }, { transform: 'perspective(600px) rotateX(10deg) rotateY(-10deg) scale(.93)' }, { transform: BT }], { duration: 260, easing: 'ease-out' });
+    D.animate([0, 9, -7, 5, -3, 1.5, 0].map(r => ({ rotate: r + 'deg' })), { duration: 700, easing: 'ease-out' });
+    if (d.hit) B.animate([{ boxShadow: '0 0 30px #0ff4' }, { boxShadow: `0 0 70px 10px ${col}` }, { boxShadow: '0 0 30px #0ff4' }], 800);
+    await sleep(1000);
+  });
+}
+
+const BV = {
+  swish: [[47, 207, 0, 1, 0], [130, 28, 200, .9, .42], [215, 66, 330, .76, .62], [215, 112, 400, .72, .72], [215, 206, 440, .7, 1]],
+  rimIn: [[47, 207, 0, 1, 0], [130, 28, 200, .9, .4], [236, 70, 330, .76, .6], [224, 46, 380, .76, .7], [213, 98, 430, .74, .8], [215, 128, 470, .72, .86], [215, 206, 500, .7, 1]],
+  rimOut: [[47, 207, 0, 1, 0], [130, 28, 200, .9, .4], [206, 72, 330, .76, .6], [168, 30, 420, .8, .72], [115, 206, 600, .9, 1]],
+  board: [[47, 207, 0, 1, 0], [130, 28, 200, .9, .4], [246, 58, 330, .76, .6], [198, 48, 420, .78, .72], [150, 206, 600, .9, 1]]
+};
+function shot() {
+  play('basket', {}, async d => {
+    const k = d.hit ? (Math.random() < .55 ? 'swish' : 'rimIn') : (Math.random() < .5 ? 'rimOut' : 'board'), F = BV[k], dur = k === 'swish' ? 1400 : 1800;
+    const fr = F.map((p, i) => ({
+      transform: `translate(${p[0] - 17}px,${p[1] - 17}px) rotate(${p[2]}deg) scale(${p[3]})`, offset: p[4],
+      opacity: i === F.length - 1 ? 0 : 1, easing: F[i + 1] && F[i + 1][1] < p[1] ? 'ease-out' : 'ease-in'
+    }));
+    const a = $('#bb').animate(fr, { duration: dur }), st = $('#t-basket .stage');
+    setTimeout(() => { $('#rim').animate([{ stroke: '#ff0055' }, { stroke: '#fff' }, { stroke: '#ff0055' }], 300); burst(st, F[2][0], F[2][1], d.hit ? '#00ff88' : '#ff0055', 8, 34); }, dur * F[2][4]);
+    if (d.hit) setTimeout(() => { $('#net').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.15,1.35)' }, { transform: 'scale(.95,.9)' }, { transform: 'scale(1)' }], 500); burst(st, 215, 120, '#00ff88', 10, 40); }, dur * (k === 'swish' ? .72 : .86));
+    await a.finished; await sleep(200);
+  });
+}
+
+function kick(side) {
+  play('football', { side }, async d => {
+    const X = [80, 160, 240], cx = X[side], kx = X[d.keeper], K = $('#keeper'), B = $('#fb');
+    K.animate([
+      { transform: 'translate(140px,86px)' },
+      { transform: `translate(${kx - 20}px,${d.keeper === 1 ? 66 : 98}px) rotate(${[-70, 0, 70][d.keeper]}deg) scale(${d.keeper === 1 ? 1.3 : 1})` }
+    ], { duration: 450, delay: 120, easing: 'ease-out', fill: 'forwards' });
+    const end = d.goal ? [cx - 16, 62] : [kx - 16, 84];
+    await B.animate([
+      { transform: 'translate(144px,174px) scale(1) rotate(0)' },
+      { transform: `translate(${end[0]}px,${end[1]}px) scale(.6) rotate(540deg)` }
+    ], { duration: 560, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' }).finished;
+    if (d.goal) $('#gnet').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.05,1.1)' }, { transform: 'scale(1)' }], 320);
+    else await B.animate([{ transform: `translate(${end[0]}px,${end[1]}px) scale(.6)` }, { transform: `translate(${end[0] + (side - 1) * 40 || 40}px,150px) scale(.8)` }], { duration: 350, easing: 'ease-in', fill: 'forwards' }).finished;
+    await sleep(800);
+    B.getAnimations().forEach(a => a.cancel()); K.getAnimations().forEach(a => a.cancel());
+  });
+}
+
+/* ---------- ИДЕИ (ИСПРАВЛЕНО И ЗАЩИЩЕНО) ---------- */
+async function loadIdeas(silent) {
+  const L = $('#ideasList');
+  if (!silent) L.textContent = 'Загрузка идей...';
+  
+  const d = await api('ideas');
+  L.textContent = '';
+  
+  if (!Array.isArray(d)) { 
+      L.append(el('p', '', (d && d.error) || 'Ошибка')); 
+      return; 
+  }
+  
+  if (!d.length) { 
+      L.append(el('p', '', 'Идей пока нет. Будь первым!')); 
+      return; 
+  }
+
+  d.forEach((item, i) => {
+    const top = i === 0 && item.likes > 0;
+    const row = el('div', 'idea-item' + (top ? ' top' : ''));
+    
+    const box = el('div'); 
+    box.style.flex = '1';
+    // Используем textContent для защиты от XSS
+    box.append(
+        el('div', 'idea-txt', (top ? '👑 ' : '') + item.text), 
+        el('div', 'idea-meta', 'от ' + item.nickname)
+    );
+    
+    const btn = el('button', 'like-btn' + (item.voted ? ' voted' : ''));
+    btn.type = 'button';
+    btn.textContent = (item.voted ? '❤️ ' : '🤍 ') + item.likes;
+    btn.onclick = () => likeIdea(item.id, btn);
+    
+    row.append(box, btn); 
+    L.append(row);
+  });
+}
+
+let liking = false;
+async function likeIdea(id, btn) {
+  if (liking) return; 
+  liking = true;
+  btn.style.opacity = .6;
+  
+  const d = await api('like_idea', { idea_id: id });
+  liking = false;
+  btn.style.opacity = 1;
+  
+  if (d.error) return pop(d.error, 'lose');
+  
+  try { tg.HapticFeedback && tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+  snd(d.liked ? 600 : 300, .1, 'sine', .05);
+  loadIdeas(true); // Тихое обновление списка
+}
+
+async function submitIdea() {
+  const text = $('#ideaIn').value.trim();
+  if (text.length < 5) return pop('Слишком короткая идея!', 'lose');
+  const d = await api('add_idea', { text });
+  if (d.error) return pop(d.error, 'lose');
+  $('#ideaIn').value = '';
+  pop('✅ Идея добавлена!', 'win');
+  hap('success');
+  loadIdeas();
+}
+
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const fmt = v => cat === 'spins' ? `${v} 🎰` : `${v} 🪙`;
+$('#cats').onclick = e => {
+  if (!e.target.dataset.c) return; cat = e.target.dataset.c;
+  document.querySelectorAll('#cats button').forEach(b => b.classList.toggle('on', b.dataset.c === cat)); loadRating();
+};
+async function loadRating() {
+  const d = await api('rating?cat=' + cat), L = $('#list'); L.textContent = '';
+  d.top.forEach((p, i) => {
+    const r = el('div', 'ri' + (p.me ? ' me' : '') + (i < 3 ? ' t' + i : ''));
+    r.append(el('b', '', i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)), el('div', 'av', (p.nickname || '?')[0].toUpperCase()), el('span', '', (p.vip ? '⭐ ' : '') + p.nickname), el('em', '', (cat === 'online' ? '🟢 ' : '') + fmt(p.v)));
+    L.append(r);
+  });
+  if (!d.top.length) L.append(el('p', '', 'Пока никого — стань первым!'));
+  $('#me').textContent = `Твоё место: #${d.me.rank} · ${fmt(d.me.v)} · онлайн сейчас: ${d.online}`;
+}
+
+let M = { lvl: 1, en: 100, pend: 0, cost: 250 }, pendTaps = 0, flushT;
+function drawMine() {
+  $('#enBar').style.width = M.en + '%'; $('#enTxt').textContent = `⚡ ${Math.floor(M.en)} / 100`;
+  $('#mineInfo').textContent = `Уровень бура ${M.lvl} · +${M.lvl} за тап · пассив ${M.lvl * 60}/час (копится до 3 ч)`;
+  $('#colBtn').textContent = `Забрать ${M.pend} 🪙`; $('#upBtn').textContent = `Улучшить бур · ${M.cost} 🪙`;
+}
+async function loadMine() { const d = await api('mine'); M = { lvl: d.lvl, en: d.energy, pend: d.pending, cost: d.cost }; drawMine(); }
+async function flush() {
+  const n = pendTaps; pendTaps = 0; if (!n) return;
+  const d = await api('tap', { n }); if (d.error) return;
+  bal = d.balance; $('#bal').textContent = bal; M.en = d.energy; drawMine();
+}
+$('#gem').addEventListener('pointerdown', e => {
+  const g = $('#gem svg');
+  if (M.en < 1) { g.animate([{ translate: '-8px' }, { translate: '8px' }, { translate: '0' }], 160); return; }
+  M.en--; pendTaps++; snd(800 + Math.random() * 300, .05, 'triangle', .05); bal += M.lvl; $('#bal').textContent = bal; drawMine();
+  g.animate([{ scale: 1 }, { scale: .9 }, { scale: 1 }], 130);
+  g.animate([{ filter: 'drop-shadow(0 0 28px #0ff9) brightness(1)' }, { filter: 'drop-shadow(0 0 45px #fff) brightness(1.6)' }, { filter: 'drop-shadow(0 0 28px #0ff9) brightness(1)' }], 200);
+  const f = el('div', 'fl', '+' + M.lvl); f.style.left = e.clientX - 10 + 'px'; f.style.top = e.clientY - 30 + 'px'; document.body.append(f);
+  f.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-90px)', opacity: 0 }], 700).onfinish = () => f.remove();
+  tg.HapticFeedback && tg.HapticFeedback.impactOccurred('light');
+  clearTimeout(flushT); flushT = setTimeout(flush, 600);
+});
+setInterval(() => { if (M.en < 100) { M.en = Math.min(100, M.en + 1); if ($('#t-mine').classList.contains('on')) drawMine(); } }, 1000);
+async function collect() {
+  const d = await api('collect', {}); if (d.error) return pop(d.error, 'lose');
+  setBal(d.balance); result(d); loadMine();
+}
+async function upgrade() {
+  const d = await api('upgrade', {}); if (d.error) return pop(d.error, 'lose');
+  setBal(d.balance); pop(`Бур ${d.lvl} ур. ⚡`, 'win'); confetti(60); hap('success'); loadMine();
+}
+
+let dailyTimer;
+async function loadProfile() {
+  const d = await refresh(); if (d.error) return;
+  $('#nickIn').value = d.nickname;
+  REF = d.ref;
+  $('#stats').textContent = `${[[5000, 'Легенда 👑'], [1000, 'Профи 💎'], [200, 'Игрок 🎲'], [0, 'Новичок 🌱']].find(t => d.spins >= t[0])[1]} · прокрутов: ${d.spins}`;
+  clearInterval(dailyTimer);
+  let left = d.daily_in; const b = $('#dailyBtn');
+  const upd = () => {
+    if (left <= 0) { b.textContent = 'Забрать бонус +500 🪙'; b.disabled = false; clearInterval(dailyTimer); }
+    else { const h = Math.floor(left / 3600), m = Math.floor(left % 3600 / 60), s = left % 60; b.textContent = `Бонус через ${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; b.disabled = true; left--; }
+  };
+  upd(); dailyTimer = setInterval(upd, 1000);
+}
+async function saveNick() {
+  const d = await api('nickname', { nickname: $('#nickIn').value });
+  if (d.error) return pop(d.error, 'lose');
+  $('#nick').textContent = d.nickname; pop('✅ Сохранено', 'even');
+}
+async function daily() {
+  const d = await api('daily', {});
+  if (d.error) return pop(d.error, 'lose');
+  setBal(d.balance); result(d); loadProfile();
+}
+
+let REF = '';
+function invite() {
+  tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(REF) + '&text=' + encodeURIComponent('Залетай в NEMESIS OS: казино, дартс и шахта прямо в Telegram 🎰'));
+}
+$('#don').innerHTML = [50, 100, 250, 500].map(a => `<button type="button" class="btn" style="flex:1 1 45%" data-a="${a}">⭐ ${a}<br><small>+${a * 20} 🪙</small></button>`).join('');
+$('#don').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = await api('donate', { amount: +b.dataset.a }); if (d.error) return pop(d.error, 'lose');
+  tg.openInvoice(d.link, st => { if (st === 'paid') { pop('Спасибо! ❤️', 'win'); confetti(90); hap('success'); setTimeout(refresh, 1500); setTimeout(refresh, 4000); } });
+};
+
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>
