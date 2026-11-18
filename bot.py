@@ -13,7 +13,7 @@ from aiohttp import web
 BOT_TOKEN = "9060753040:AAHLBIg43U7UrZbzF8QFbwHEnmGnAlJ66xo"
 
 # ССЫЛКУ СЮДА ВСТАВИШЬ ПОСЛЕ ДЕПЛОЯ (Render выдаст постоянный адрес)
-WEB_APP_URL = "https://example.com" 
+WEB_APP_URL = "https://xxx.cloady.io" 
 
 # На хостинге VPN НЕ НУЖЕН
 PROXY_URL = None 
