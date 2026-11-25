@@ -12,7 +12,7 @@ from aiohttp import web
 BOT_TOKEN = "9060753040:AAHLBIg43U7UrZbzF8QFbwHEnmGnAlJ66xo"
 
 # ВСТАВЬ СЮДА ССЫЛКУ ОТ FADEHOST (когда он её выдаст)
-WEB_APP_URL = "https://example.com" 
+WEB_APP_URL = "https://my-casino-bot.fadehost.app" 
 
 PROXY_URL = None 
 DEV = False
