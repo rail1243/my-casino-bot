@@ -9,7 +9,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, LabeledPri
 from aiohttp import web
 
 # ---------- НАСТРОЙКИ ----------
-BOT_TOKEN = "9060753040:AAHLBIg43U7UrZbzF8QFbwHEnmGnAlJ66xo"
+BOT_TOKEN = "9060753040:AAGXUqEawDTfCkHSu24aPt2_vSKberz1GVk"
 
 # ВСТАВЬ СЮДА ССЫЛКУ ОТ FADEHOST (когда он её выдаст)
 WEB_APP_URL = "https://my-casino-bot.fadehost.app" 
